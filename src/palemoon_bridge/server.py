@@ -34,7 +34,7 @@ _load_env()
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("PALEMOON_BRIDGE_PORT", "18765"))
 TOKEN = os.environ.get("PALEMOON_BRIDGE_TOKEN") or secrets.token_hex(16)
-TIMEOUT = 30
+TIMEOUT = 30  # per command; wait_for_captcha_clear polls and has its own deadline
 
 _commands: "queue.Queue[dict]" = queue.Queue()
 _pending: dict[str, dict] = {}
@@ -155,6 +155,26 @@ def click(selector: str, tab: int | None = None) -> dict:
 def type_text(selector: str, text: str, submit: bool = False, tab: int | None = None) -> dict:
     """Type text into an input matching a CSS selector; optionally submit its form."""
     return send_command("type", selector=selector, text=text, submit=submit, tab=tab)
+
+
+@mcp.tool()
+def detect_captcha(tab: int | None = None) -> dict:
+    """Check whether the page shows a CAPTCHA (reCAPTCHA, hCaptcha, Cloudflare Turnstile, etc.)."""
+    return send_command("detect_captcha", tab=tab)
+
+
+@mcp.tool()
+def wait_for_captcha_clear(tab: int | None = None, timeout_s: int = 240) -> dict:
+    """Pause until a CAPTCHA on the page is gone. The HUMAN must solve it in the browser;
+    this tool never solves or bypasses CAPTCHAs. Returns cleared=true or timed_out=true."""
+    import time
+    deadline = time.time() + min(timeout_s, 600)
+    while time.time() < deadline:
+        state = send_command("detect_captcha", tab=tab)
+        if not state.get("captcha"):
+            return {"cleared": True, "url": state.get("url")}
+        time.sleep(3)
+    return {"cleared": False, "timed_out": True, "url": state.get("url")}
 
 
 def main():

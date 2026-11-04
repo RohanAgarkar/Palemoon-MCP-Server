@@ -111,6 +111,18 @@ var handlers = {
     }
     reply(out);
   },
+  detect_captcha: function (p, reply) {
+    var d = tabOf(win(), p.tab).linkedBrowser.contentDocument;
+    var hits = [];
+    var frames = d.querySelectorAll("iframe");
+    for (var i = 0; i < frames.length; i++) {
+      var src = (frames[i].src || "") + " " + (frames[i].title || "");
+      if (/recaptcha|hcaptcha|turnstile|captcha/i.test(src)) hits.push({ kind: "iframe", src: frames[i].src.slice(0, 120) });
+    }
+    var marks = d.querySelectorAll(".g-recaptcha,.h-captcha,.cf-turnstile,#cf-challenge-running,[data-sitekey]");
+    for (var j = 0; j < marks.length; j++) hits.push({ kind: "element", selector: cssPath(marks[j]) });
+    reply({ captcha: hits.length > 0, found: hits.slice(0, 10), url: d.location.href });
+  },
   click: function (p, reply) {
     var el = sel(tabOf(win(), p.tab).linkedBrowser.contentDocument, p.selector);
     el.scrollIntoView(); el.click(); reply({ clicked: p.selector });
