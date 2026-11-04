@@ -49,8 +49,8 @@ def _log(line: str):
         f.write(f"{time.strftime('%H:%M:%S')} {line}\n")
 
 
-def send_command(action: str, **params) -> dict:
-    """Queue a command for the add-on and wait for its result."""
+def send_command(action: str, _secret: bool = False, **params) -> dict:
+    """Queue a command for the add-on and wait for its result. _secret=True keeps params out of the log."""
     cid = uuid.uuid4().hex
     slot = {"event": threading.Event(), "result": None}
     _pending[cid] = slot
@@ -59,7 +59,8 @@ def send_command(action: str, **params) -> dict:
         if not slot["event"].wait(TIMEOUT):
             raise TimeoutError("Pale Moon add-on did not respond (is it installed and the token set?)")
         res = slot["result"]
-        _log(f"{action} {params} -> {json.dumps(res)[:2000]}")
+        shown = "<redacted>" if _secret else params
+        _log(f"{action} {shown} -> {'<redacted>' if _secret else json.dumps(res)[:2000]}")
         if res.get("error"):
             raise RuntimeError(res["error"])
         return res.get("data")
@@ -175,6 +176,34 @@ def wait_for_captcha_clear(tab: int | None = None, timeout_s: int = 240) -> dict
             return {"cleared": True, "url": state.get("url")}
         time.sleep(3)
     return {"cleared": False, "timed_out": True, "url": state.get("url")}
+
+
+# Named credential profiles read from .env. Only the profile name is ever passed in.
+PROFILES = {
+    "esic": {
+        "url_contains": "portal.esic.gov.in",
+        "fields": {"username": ("ESIC_USERNAME", "#txtUserName"),
+                   "password": ("ESIC_PASSWORD", "#txtPassword")},
+    },
+}
+
+
+@mcp.tool()
+def fill_login(profile: str, tab: int | None = None) -> dict:
+    """Fill the username and password fields of a login page from the credentials in .env.
+    Takes only a profile name; the secret values are read locally and never returned.
+    Does NOT submit the form and does NOT touch the captcha."""
+    prof = PROFILES.get(profile)
+    if not prof:
+        raise ValueError(f"unknown profile {profile!r}; known: {list(PROFILES)}")
+    filled = []
+    for field, (env_key, selector) in prof["fields"].items():
+        value = os.environ.get(env_key)
+        if not value:
+            raise ValueError(f"{env_key} is not set in .env")
+        send_command("type", _secret=True, selector=selector, text=value, submit=False, tab=tab)
+        filled.append(field)
+    return {"filled": filled, "submitted": False}
 
 
 def main():
