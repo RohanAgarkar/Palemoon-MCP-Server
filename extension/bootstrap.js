@@ -57,9 +57,9 @@ function readBytes(f) {
   fis.init(f, 0x01, 0, 0);
   var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
   bis.setInputStream(fis);
-  var n = bis.available(), bytes = bis.readByteArray(n);
+  var n = bis.available(), arr = bis.readByteArray(n);
   bis.close();
-  return bytes;
+  return new Uint8Array(arr);
 }
 function guessMime(name) {
   var ext = (name.split(".").pop() || "").toLowerCase();
