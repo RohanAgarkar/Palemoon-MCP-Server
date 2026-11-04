@@ -40,6 +40,15 @@ _commands: "queue.Queue[dict]" = queue.Queue()
 _pending: dict[str, dict] = {}
 
 
+LOG = os.environ.get("PALEMOON_BRIDGE_LOG", "/tmp/palemoon-bridge.log")
+
+
+def _log(line: str):
+    import time
+    with open(LOG, "a") as f:
+        f.write(f"{time.strftime('%H:%M:%S')} {line}\n")
+
+
 def send_command(action: str, **params) -> dict:
     """Queue a command for the add-on and wait for its result."""
     cid = uuid.uuid4().hex
@@ -50,6 +59,7 @@ def send_command(action: str, **params) -> dict:
         if not slot["event"].wait(TIMEOUT):
             raise TimeoutError("Pale Moon add-on did not respond (is it installed and the token set?)")
         res = slot["result"]
+        _log(f"{action} {params} -> {json.dumps(res)[:2000]}")
         if res.get("error"):
             raise RuntimeError(res["error"])
         return res.get("data")
