@@ -13,6 +13,24 @@ from urllib.parse import parse_qs, urlparse
 
 from mcp.server.mcpserver import MCPServer
 
+from pathlib import Path
+
+
+def _load_env():
+    """Load KEY=VALUE lines from .env in the cwd or project root (existing env wins)."""
+    for d in (Path.cwd(), Path(__file__).resolve().parents[2]):
+        f = d / ".env"
+        if f.is_file():
+            for line in f.read_text().splitlines():
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip().strip("\"'"))
+            return
+
+
+_load_env()
+
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("PALEMOON_BRIDGE_PORT", "18765"))
 TOKEN = os.environ.get("PALEMOON_BRIDGE_TOKEN") or secrets.token_hex(16)
