@@ -40,13 +40,19 @@ function tabOf(w, i) {
   return tabs[i];
 }
 
-function waitLoad(browser, cb) {
-  // Poll until the document is fully loaded (or give up after 20s).
+function waitLoad(browser, targetUrl, cb) {
+  // Wait until the browser has actually started and finished loading the target (or give up after 30s).
   var start = Date.now();
+  var sawLoading = false;
   (function check() {
+    var busy = browser.webProgress && browser.webProgress.isLoading;
+    if (busy) sawLoading = true;
     var d = browser.contentDocument;
-    if (d && d.readyState === "complete" && browser.currentURI.spec !== "about:blank") return cb();
-    if (Date.now() - start > 20000) return cb();
+    var ready = d && d.readyState === "complete";
+    var urlOk = !targetUrl || browser.currentURI.spec !== "about:blank";
+    // Done when loading has happened (or the URL changed) and the document is complete.
+    if (!busy && ready && urlOk && (sawLoading || Date.now() - start > 1000)) return cb();
+    if (Date.now() - start > 30000) return cb();
     setTimeout(check, 300);
   })();
 }
@@ -96,7 +102,7 @@ var handlers = {
   navigate: function (p, reply) {
     var w = win(), t = tabOf(w, p.tab), b = t.linkedBrowser;
     w.gBrowser.selectedTab = t;
-    waitLoad(b, function () { reply({ url: b.currentURI.spec, title: b.contentTitle }); });
+    waitLoad(b, p.url, function () { reply({ url: b.currentURI.spec, title: b.contentTitle }); });
     b.loadURI(p.url);
   },
   new_tab: function (p, reply) {
@@ -136,6 +142,14 @@ var handlers = {
     }
     var marks = d.querySelectorAll(".g-recaptcha,.h-captcha,.cf-turnstile,#cf-challenge-running,[data-sitekey]");
     for (var j = 0; j < marks.length; j++) hits.push({ kind: "element", selector: cssPath(marks[j]) });
+    // Image/text captchas (e.g. ESIC #txtChallanCaptcha): any img/input whose id, name, src or placeholder mentions captcha.
+    var cands = d.querySelectorAll("img,input");
+    for (var k = 0; k < cands.length; k++) {
+      var c = cands[k];
+      if (c.type === "hidden") continue;
+      var tag = [c.id, c.name, c.getAttribute("src") || "", c.placeholder || "", c.alt || ""].join(" ");
+      if (/captcha/i.test(tag)) hits.push({ kind: "image_or_input", selector: cssPath(c), tag: c.tagName.toLowerCase() });
+    }
     reply({ captcha: hits.length > 0, found: hits.slice(0, 10), url: d.location.href });
   },
   upload_file: function (p, reply) {
