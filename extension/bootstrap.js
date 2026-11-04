@@ -41,11 +41,14 @@ function tabOf(w, i) {
 }
 
 function waitLoad(browser, cb) {
-  var done = false;
-  function finish() { if (done) return; done = true; browser.removeEventListener("load", onload, true); cb(); }
-  function onload(e) { if (e.target === browser.contentDocument) finish(); }
-  browser.addEventListener("load", onload, true);
-  setTimeout(finish, 20000);
+  // Poll until the document is fully loaded (or give up after 20s).
+  var start = Date.now();
+  (function check() {
+    var d = browser.contentDocument;
+    if (d && d.readyState === "complete" && browser.currentURI.spec !== "about:blank") return cb();
+    if (Date.now() - start > 20000) return cb();
+    setTimeout(check, 300);
+  })();
 }
 
 function sel(doc, s) {
@@ -128,7 +131,10 @@ function handle(cmd) {
     var h = handlers[cmd.action];
     if (!h) throw new Error("unknown action " + cmd.action);
     h(cmd.params || {}, function (data) { send({ data: data }); });
-  } catch (e) { send({ error: String(e && e.message || e) }); }
+  } catch (e) {
+    var msg = String(e && e.message || e);
+    send({ error: msg + (e && e.stack ? "\n" + e.stack : "") });
+  }
 }
 
 function poll() {
