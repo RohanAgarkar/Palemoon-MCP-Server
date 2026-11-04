@@ -206,6 +206,17 @@ def fill_login(profile: str, tab: int | None = None) -> dict:
     return {"filled": filled, "submitted": False}
 
 
+@mcp.tool()
+def upload_file(path: str, selector: str = "#ctl00_HomePageContent_FileUpload_Photo", tab: int | None = None) -> dict:
+    """Attach a local image/file to a file input (default: the employee photo field).
+    Pass the path for each registration. Only attaches the file; it does NOT click upload or submit buttons."""
+    from pathlib import Path
+    p = Path(path).expanduser().resolve()
+    if not p.is_file():
+        raise ValueError(f"file not found: {p}")
+    return send_command("upload_file", path=str(p), selector=selector, tab=tab)
+
+
 def main():
     srv = ThreadingHTTPServer((HOST, PORT), Relay)
     threading.Thread(target=srv.serve_forever, daemon=True).start()

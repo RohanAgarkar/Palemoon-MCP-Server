@@ -51,6 +51,21 @@ function waitLoad(browser, cb) {
   })();
 }
 
+var Cu = Components.utils;
+function readBytes(f) {
+  var fis = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
+  fis.init(f, 0x01, 0, 0);
+  var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
+  bis.setInputStream(fis);
+  var n = bis.available(), bytes = bis.readByteArray(n);
+  bis.close();
+  return bytes;
+}
+function guessMime(name) {
+  var ext = (name.split(".").pop() || "").toLowerCase();
+  return { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", pdf: "application/pdf" }[ext] || "application/octet-stream";
+}
+
 function sel(doc, s) {
   var el = doc.querySelector(s);
   if (!el) throw new Error("no element matches " + s);
@@ -122,6 +137,25 @@ var handlers = {
     var marks = d.querySelectorAll(".g-recaptcha,.h-captcha,.cf-turnstile,#cf-challenge-running,[data-sitekey]");
     for (var j = 0; j < marks.length; j++) hits.push({ kind: "element", selector: cssPath(marks[j]) });
     reply({ captcha: hits.length > 0, found: hits.slice(0, 10), url: d.location.href });
+  },
+  upload_file: function (p, reply) {
+    // Attach a local file to <input type=file>. Does not submit or click any upload button.
+    var d = tabOf(win(), p.tab).linkedBrowser.contentDocument;
+    var el = sel(d, p.selector);
+    if (el.type !== "file") throw new Error(p.selector + " is not a file input");
+    var f = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+    f.initWithPath(p.path);
+    if (!f.exists() || !f.isFile()) throw new Error("file not found: " + p.path);
+    var data = readBytes(f);
+    var mime = guessMime(f.leafName);
+    var w = d.defaultView;
+    var blob = new w.Blob([Cu.cloneInto(data, w)], { type: mime });
+    var file = new w.File([blob], f.leafName, { type: mime });
+    var dt = new w.DataTransfer();
+    dt.items.add(file);
+    el.files = dt.files;
+    el.dispatchEvent(new w.Event("change", { bubbles: true }));
+    reply({ attached: f.leafName, bytes: data.length, selector: p.selector });
   },
   click: function (p, reply) {
     var el = sel(tabOf(win(), p.tab).linkedBrowser.contentDocument, p.selector);
