@@ -1,0 +1,120 @@
+{
+  "format": 1,
+  "revisionFormat": 2,
+  "entries": {
+    "sessions/01a1b973-913f-733e-836b-67349b8a0bf2": {
+      "key": "sessions/01a1b973-913f-733e-836b-67349b8a0bf2",
+      "value": {
+        "id": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "name": "PB-1",
+        "label": "PB-1",
+        "kind": "peer",
+        "status": "running",
+        "runner": "pi",
+        "transport": "host",
+        "cwd": "/Users/rohanagarkar/Documents/Projects/ESIC Form Filler/palemoon-bridge",
+        "sessionId": "01a1b973-913f-733e-836b-67349b8a0bf2",
+        "model": "openrouter/moonshotai/kimi-k2.6",
+        "thinking": "medium",
+        "startedAt": 1794112785298,
+        "updatedAt": 1794112811549,
+        "pendingMessages": false,
+        "local": false
+      },
+      "version": 60,
+      "updatedAt": 1794112811549,
+      "updatedBy": {
+        "id": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "name": "main",
+        "kind": "main",
+        "sessionId": "01a1b973-913f-733e-836b-67349b8a0bf2"
+      }
+    },
+    "topology/participants/2d80b6e7976f5dc9037e6ca9ad4ab0080537096fd58dd634050f1b53e05ab806": {
+      "key": "topology/participants/2d80b6e7976f5dc9037e6ca9ad4ab0080537096fd58dd634050f1b53e05ab806",
+      "value": {
+        "format": 1,
+        "id": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "kind": "root",
+        "rootId": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "ownerHostId": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "ownerIdentityId": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "name": "main",
+        "status": "running",
+        "runner": "pi",
+        "transport": "host",
+        "capabilities": [
+          "steer",
+          "followUp",
+          "fabric"
+        ],
+        "cwd": "/Users/rohanagarkar/Documents/Projects/ESIC Form Filler/palemoon-bridge",
+        "sessionId": "01a1b973-913f-733e-836b-67349b8a0bf2",
+        "model": "openrouter/moonshotai/kimi-k2.6",
+        "thinking": "medium",
+        "startedAt": 1794112785298,
+        "updatedAt": 1794112811549,
+        "pendingMessages": false,
+        "controlProtocol": "v1",
+        "ownerIncarnation": "97fc0707-251b-4747-89aa-da9b91ee9eaa",
+        "label": "PB-1"
+      },
+      "version": 61,
+      "updatedAt": 1794112811550,
+      "updatedBy": {
+        "id": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "name": "main",
+        "kind": "main",
+        "sessionId": "01a1b973-913f-733e-836b-67349b8a0bf2"
+      }
+    },
+    "topology/hosts/2d80b6e7976f5dc9037e6ca9ad4ab0080537096fd58dd634050f1b53e05ab806": {
+      "key": "topology/hosts/2d80b6e7976f5dc9037e6ca9ad4ab0080537096fd58dd634050f1b53e05ab806",
+      "value": {
+        "format": 1,
+        "id": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "rootId": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "identity": {
+          "id": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+          "name": "main",
+          "kind": "main",
+          "sessionId": "01a1b973-913f-733e-836b-67349b8a0bf2"
+        },
+        "startedAt": 1794112785299,
+        "updatedAt": 1794112811551,
+        "expiresAt": 1794112826551
+      },
+      "version": 62,
+      "updatedAt": 1794112811551,
+      "updatedBy": {
+        "id": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "name": "main",
+        "kind": "main",
+        "sessionId": "01a1b973-913f-733e-836b-67349b8a0bf2"
+      }
+    },
+    "topology/peer-seq/3": {
+      "key": "topology/peer-seq/3",
+      "value": {
+        "format": 1,
+        "next": 1
+      },
+      "version": 4,
+      "updatedAt": 1794112785320,
+      "updatedBy": {
+        "id": "session:01a1b973-913f-733e-836b-67349b8a0bf2",
+        "name": "main",
+        "kind": "main",
+        "sessionId": "01a1b973-913f-733e-836b-67349b8a0bf2"
+      }
+    }
+  },
+  "highWater": 181,
+  "versions": {
+    "sessions/01a1b973-913f-733e-836b-67349b8a0bf2": 60,
+    "topology/participants/2d80b6e7976f5dc9037e6ca9ad4ab0080537096fd58dd634050f1b53e05ab806": 61,
+    "topology/hosts/2d80b6e7976f5dc9037e6ca9ad4ab0080537096fd58dd634050f1b53e05ab806": 62,
+    "topology/peer-seq/3": 4
+  },
+  "tombstoneOrder": []
+}
