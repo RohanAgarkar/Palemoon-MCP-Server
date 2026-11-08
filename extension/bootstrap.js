@@ -142,7 +142,7 @@ var handlers = {
     }
     var marks = d.querySelectorAll(".g-recaptcha,.h-captcha,.cf-turnstile,#cf-challenge-running,[data-sitekey]");
     for (var j = 0; j < marks.length; j++) hits.push({ kind: "element", selector: cssPath(marks[j]) });
-    // Image/text captchas (e.g. ESIC #txtChallanCaptcha): any img/input whose id, name, src or placeholder mentions captcha.
+    // Image/text captchas: any img/input whose id, name, src or placeholder mentions captcha.
     var cands = d.querySelectorAll("img,input");
     for (var k = 0; k < cands.length; k++) {
       var c = cands[k];

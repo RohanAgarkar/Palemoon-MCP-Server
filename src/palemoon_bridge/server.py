@@ -178,38 +178,10 @@ def wait_for_captcha_clear(tab: int | None = None, timeout_s: int = 240) -> dict
     return {"cleared": False, "timed_out": True, "url": state.get("url")}
 
 
-# Named credential profiles read from .env. Only the profile name is ever passed in.
-PROFILES = {
-    "esic": {
-        "url_contains": "portal.esic.gov.in",
-        "fields": {"username": ("ESIC_USERNAME", "#txtUserName"),
-                   "password": ("ESIC_PASSWORD", "#txtPassword")},
-    },
-}
-
-
 @mcp.tool()
-def fill_login(profile: str, tab: int | None = None) -> dict:
-    """Fill the username and password fields of a login page from the credentials in .env.
-    Takes only a profile name; the secret values are read locally and never returned.
-    Does NOT submit the form and does NOT touch the captcha."""
-    prof = PROFILES.get(profile)
-    if not prof:
-        raise ValueError(f"unknown profile {profile!r}; known: {list(PROFILES)}")
-    filled = []
-    for field, (env_key, selector) in prof["fields"].items():
-        value = os.environ.get(env_key)
-        if not value:
-            raise ValueError(f"{env_key} is not set in .env")
-        send_command("type", _secret=True, selector=selector, text=value, submit=False, tab=tab)
-        filled.append(field)
-    return {"filled": filled, "submitted": False}
-
-
-@mcp.tool()
-def upload_file(path: str, selector: str = "#ctl00_HomePageContent_FileUpload_Photo", tab: int | None = None) -> dict:
-    """Attach a local image/file to a file input (default: the employee photo field).
-    Pass the path for each registration. Only attaches the file; it does NOT click upload or submit buttons."""
+def upload_file(path: str, selector: str = "input[type=file]", tab: int | None = None) -> dict:
+    """Attach a local file to a file input (default: any file input on the page).
+    Pass the path and optionally a CSS selector. Only attaches the file; it does NOT click upload or submit buttons."""
     from pathlib import Path
     p = Path(path).expanduser().resolve()
     if not p.is_file():
